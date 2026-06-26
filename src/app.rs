@@ -1,5 +1,4 @@
 use std::path::{Path, PathBuf};
-use std::process::Command;
 
 #[derive(Default)]
 pub enum Status {
@@ -18,27 +17,22 @@ pub struct App {
 
 impl App {
     pub fn convert_pdf(&mut self, path: &Path) {
-        let result = Command::new("pdftotext")
-            .arg(path)
-            .arg("-")
-            .output();
+        let bytes = match std::fs::read(path) {
+            Ok(b) => b,
+            Err(e) => {
+                self.status = Status::Error(format!("Lecture impossible : {}", e));
+                return;
+            }
+        };
 
-        match result {
-            Ok(output) => {
-                if output.status.success() {
-                    self.markdown = String::from_utf8_lossy(&output.stdout).into_owned();
-                    self.source_path = Some(path.to_path_buf());
-                    self.status = Status::Success(format!("Converti : {}", path.display()));
-                } else {
-                    let stderr = String::from_utf8_lossy(&output.stderr);
-                    self.status = Status::Error(format!("pdftotext : {}", stderr));
-                }
+        match pdf_extract::extract_text_from_mem(&bytes) {
+            Ok(text) => {
+                self.markdown = text;
+                self.source_path = Some(path.to_path_buf());
+                self.status = Status::Success(format!("Converti : {}", path.display()));
             }
             Err(e) => {
-                self.status = Status::Error(format!(
-                    "pdftotext introuvable. Installe poppler : brew install poppler ({})",
-                    e
-                ));
+                self.status = Status::Error(format!("Extraction PDF échouée : {}", e));
             }
         }
     }
