@@ -1,30 +1,23 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
+#[derive(Default)]
 pub enum Status {
+    #[default]
     Idle,
     Success(String),
     Error(String),
 }
 
+#[derive(Default)]
 pub struct App {
     pub markdown: String,
     pub status: Status,
     pub source_path: Option<PathBuf>,
 }
 
-impl Default for App {
-    fn default() -> Self {
-        Self {
-            markdown: String::new(),
-            status: Status::Idle,
-            source_path: None,
-        }
-    }
-}
-
 impl App {
-    pub fn convert_pdf(&mut self, path: &PathBuf) {
+    pub fn convert_pdf(&mut self, path: &Path) {
         let result = Command::new("pdftotext")
             .arg(path)
             .arg("-")
@@ -34,7 +27,7 @@ impl App {
             Ok(output) => {
                 if output.status.success() {
                     self.markdown = String::from_utf8_lossy(&output.stdout).into_owned();
-                    self.source_path = Some(path.clone());
+                    self.source_path = Some(path.to_path_buf());
                     self.status = Status::Success(format!("Converti : {}", path.display()));
                 } else {
                     let stderr = String::from_utf8_lossy(&output.stderr);

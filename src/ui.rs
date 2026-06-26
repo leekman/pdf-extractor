@@ -10,26 +10,13 @@ const DIM: egui::Color32 = egui::Color32::from_rgb(120, 128, 140);
 impl eframe::App for App {
     fn ui(&mut self, ui: &mut egui::Ui, _frame: &mut eframe::Frame) {
         egui::Panel::bottom("status").show_inside(ui, |ui| {
+            let (text, color) = match &self.status {
+                Status::Idle => ("Prêt".to_string(), DIM),
+                Status::Success(msg) => (format!("✓  {}", msg), SUCCESS),
+                Status::Error(msg) => (format!("✗  {}", msg), ERROR),
+            };
             ui.horizontal(|ui| {
-                match &self.status {
-                    Status::Idle => {
-                        ui.label(egui::RichText::new("Prêt").size(12.0).color(DIM));
-                    }
-                    Status::Success(msg) => {
-                        ui.label(
-                            egui::RichText::new(format!("✓  {}", msg))
-                                .size(12.0)
-                                .color(SUCCESS),
-                        );
-                    }
-                    Status::Error(msg) => {
-                        ui.label(
-                            egui::RichText::new(format!("✗  {}", msg))
-                                .size(12.0)
-                                .color(ERROR),
-                        );
-                    }
-                }
+                ui.label(egui::RichText::new(text).size(12.0).color(color));
             });
         });
 
