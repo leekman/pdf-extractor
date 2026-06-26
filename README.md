@@ -13,6 +13,12 @@ A lightweight desktop application that converts PDF files to Markdown. Built wit
 
 Pre-built binaries for Linux, macOS (ARM64 & x86_64), and Windows are available on the [Releases](../../releases/latest) page.
 
+On macOS, the unsigned binary will be blocked by Gatekeeper. To allow it:
+
+```bash
+xattr -cr pdf-extractor
+```
+
 ## Build from source
 
 ```bash
